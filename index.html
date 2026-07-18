@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estudia AI — Ton assistant étudiant</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0F1A;
+    --surface: #131929;
+    --surface2: #1C2640;
+    --border: #2A3A5C;
+    --accent: #4F8EF7;
+    --accent2: #A78BFA;
+    --accent3: #34D399;
+    --text: #E8EDF7;
+    --muted: #7A8BB0;
+    --danger: #F87171;
+    --card-glow: rgba(79, 142, 247, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* LANDING */
+  #landing {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(11,15,26,0.9);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo span { color: var(--accent3); -webkit-text-fill-color: var(--accent3); }
+
+  nav .cta-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  nav .cta-btn:hover { background: #6BA3FA; transform: translateY(-1px); }
+
+  .hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 24px 60px;
+    gap: 28px;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.3);
+    padding: 6px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(36px, 7vw, 72px);
+    font-weight: 700;
+    line-height: 1.1;
+    max-width: 800px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #7B6CF6);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(79,142,247,0.3);
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,142,247,0.4); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* TOOLS GRID */
+  .tools-section {
+    padding: 80px 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .section-label {
+    text-align: center;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    text-align: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 700;
+    margin-bottom: 48px;
+  }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--card-glow);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .tool-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+  .tool-card:hover::before { opacity: 1; }
+
+  .tool-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .tool-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .tool-card p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+  .tool-tag {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+
+  /* APP */
+  #app {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: var(--bg);
+    flex-direction: column;
+  }
+
+  #app.visible { display: flex; }
+
+  .app-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover { color: var(--text); border-color: var(--text); }
+
+  .app-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .app-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 24px;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  /* TOOL SELECTOR */
+  .tool-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tool-chip {
+    padding: 8px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+  }
+
+  .tool-chip.active {
+    background: rgba(79,142,247,0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* INPUT AREA */
+  .input-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .context-hint {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 10px 14px;
+    background: rgba(79,142,247,0.06);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 14px 16px;
+    resize: none;
+    outline: none;
+    min-height: 120px;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+
+  .generate-btn {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--accent), #7B6CF6);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .generate-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,142,247,0.35); }
+  .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* RESULT */
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .result-box.visible { display: flex; }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .result-header span {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--accent3);
+  }
+
+  .copy-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .result-content {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* LOADING */
+  .loading-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 16px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: bounce 1.2s infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.2s; background: var(--accent2); }
+  .dot:nth-child(3) { animation-delay: 0.4s; background: var(--accent3); }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-8px); opacity: 1; }
+  }
+
+  /* ERROR */
+  .error-msg {
+    background: rgba(248,113,113,0.1);
+    border: 1px solid rgba(248,113,113,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--danger);
+    display: none;
+  }
+
+  .error-msg.visible { display: block; }
+
+  /* STATS */
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    padding: 40px 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 600px) {
+    nav { padding: 16px 20px; }
+    .hero { padding: 60px 20px 40px; }
+    .tools-section { padding: 60px 20px; }
+    .app-body { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LANDING PAGE -->
+<div id="landing">
+  <nav>
+    <div class="logo">Estudia<span>AI</span></div>
+    <button class="cta-btn" onclick="openApp()">Commencer gratuitement</button>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge">🎓 Fait pour les étudiants africains</div>
+    <h1>Ton assistant IA pour <em>réussir tes études</em></h1>
+    <p>Rédige des dissertations, résume tes cours, crée ton CV professionnel — en français, adapté à ton contexte.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="openApp()">Essayer gratuitement →</button>
+      <button class="btn-secondary" onclick="scrollToTools()">Voir les outils</button>
+    </div>
+  </section>
+
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Outils disponibles</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">En français</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0 FCFA</div>
+      <div class="stat-label">Pour commencer</div>
+    </div>
+  </div>
+
+  <section class="tools-section" id="tools-section">
+    <div class="section-label">Ce qu'on peut faire</div>
+    <div class="section-title">Tous tes besoins étudiants, un seul outil</div>
+    <div class="tools-grid">
+      <div class="tool-card" onclick="openAppWithTool('dissertation')">
+        <div class="tool-icon" style="background:rgba(79,142,247,0.15)">📝</div>
+        <h3>Dissertation</h3>
+        <p>Génère un plan structuré ou une dissertation complète sur n'importe quel sujet.</p>
+        <span class="tool-tag" style="background:rgba(79,142,247,0.12);color:#4F8EF7">Rédaction</span>
+      </div>
+      <div class="tool-card" onclick="openAppWithTool('resume')">
+        <div class="tool-icon" style="background:rgba(52,211,153,0.15)">📄</div>
+        <h3>Résumé de cours</h3>
+        <p>Colle ton cours en vrac, reçois un résumé clair et structuré pour réviser.</p>
+        <span class="tool-tag" style="background:rgba(52,211,153,0.12);color:#34D399">Révision</span>
+      </div>
+      <div class="tool-card" onclick="openAppWithTool('cv')">
+        <div class="tool-icon" style="background:rgba(167,139,250,0.15)">💼</div>
+        <h3>CV Professionnel</h3>
+        <p>Crée un CV adapté aux entreprises camerounaises et africaines.</p>
+        <span class="tool-tag" style="background:rgba(167,139,250,0.12);color:#A78BFA">Carrière</span>
+      </div>
+      <div class="tool-card" onclick="openAppWithTool('lettre')">
+        <div class="tool-icon" style="background:rgba(251,191,36,0.15)">✉️</div>
+        <h3>Lettre de motivation</h3>
+        <p>Rédige une lettre percutante pour tes candidatures de stage ou d'emploi.</p>
+        <span class="tool-tag" style="background:rgba(251,191,36,0.12);color:#FBBF24">Carrière</span>
+      </div>
+      <div class="tool-card" onclick="openAppWithTool('explication')">
+        <div class="tool-icon" style="background:rgba(248,113,113,0.15)">🧠</div>
+        <h3>Explication de notion</h3>
+        <p>Tu comprends pas un concept de cours ? Demande une explication simple.</p>
+        <span class="tool-tag" style="background:rgba(248,113,113,0.12);color:#F87171">Comprendre</span>
+      </div>
+      <div class="tool-card" onclick="openAppWithTool('exercice')">
+        <div class="tool-icon" style="background:rgba(79,142,247,0.15)">🎯</div>
+        <h3>Aide aux exercices</h3>
+        <p>Maths, physique, compta — reçois des explications pas à pas pour tes exercices.</p>
+        <span class="tool-tag" style="background:rgba(79,142,247,0.12);color:#4F8EF7">Exercices</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Made with ❤️ au Cameroun · EstudiaAI © 2025
+  </footer>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-nav">
+    <button class="back-btn" onclick="closeApp()">← Retour</button>
+    <div class="logo" style="font-size:18px">Estudia<span>AI</span></div>
+    <div id="app-tool-name" class="app-title" style="margin-left:auto;color:var(--muted);font-size:14px"></div>
+  </div>
+
+  <div class="app-body">
+    <div class="tool-selector" id="tool-selector">
+      <button class="tool-chip active" data-tool="dissertation" onclick="selectTool(this)">📝 Dissertation</button>
+      <button class="tool-chip" data-tool="resume" onclick="selectTool(this)">📄 Résumé</button>
+      <button class="tool-chip" data-tool="cv" onclick="selectTool(this)">💼 CV</button>
+      <button class="tool-chip" data-tool="lettre" onclick="selectTool(this)">✉️ Lettre</button>
+      <button class="tool-chip" data-tool="explication" onclick="selectTool(this)">🧠 Explication</button>
+      <button class="tool-chip" data-tool="exercice" onclick="selectTool(this)">🎯 Exercice</button>
+    </div>
+
+    <div class="input-section">
+      <div class="context-hint" id="context-hint">
+        Décris ton sujet de dissertation, la matière, et le niveau (Lycée, Licence, Master...)
+      </div>
+      <textarea id="user-input" placeholder="Écris ici..."></textarea>
+      <button class="generate-btn" id="gen-btn" onclick="generate()">
+        <span>✨</span> Générer
+      </button>
+    </div>
+
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="result-box" id="result-box">
+      <div class="result-header">
+        <span>✅ Résultat</span>
+        <button class="copy-btn" onclick="copyResult()">📋 Copier</button>
+      </div>
+      <div class="result-content" id="result-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TOOLS = {
+  dissertation: {
+    label: "📝 Dissertation",
+    hint: "Décris ton sujet, la matière, et ton niveau (Terminale, Licence 1, Master...)",
+    placeholder: "Ex: Dissertation sur les causes de la colonisation en Afrique — Terminale Histoire",
+    system: `Tu es un assistant scolaire expert pour les étudiants africains francophones (Cameroun, Côte d'Ivoire, Sénégal...). 
+Tu rédiges des dissertations académiques en français, structurées et adaptées au niveau demandé.
+Format: Introduction → Développement (2-3 parties avec sous-parties) → Conclusion.
+Sois clair, académique, et utilise des exemples africains quand c'est pertinent.`
+  },
+  resume: {
+    label: "📄 Résumé de cours",
+    hint: "Colle ton texte de cours ci-dessous. L'IA va le résumer de façon claire.",
+    placeholder: "Colle ici ton cours ou ta leçon...",
+    system: `Tu es un assistant scolaire pour étudiants africains. 
+Tu résumes des cours en français de façon claire et structurée.
+Format: Points clés en bullet points, définitions importantes en gras, et un mini-résumé final.
+Sois concis et facile à retenir pour les révisions.`
+  },
+  cv: {
+    label: "💼 CV Professionnel",
+    hint: "Donne tes infos : nom, formation, compétences, expériences. L'IA crée ton CV.",
+    placeholder: "Ex: Je m'appelle Yann, j'ai 22 ans, étudiant en informatique à l'Université de Yaoundé I, j'ai fait un stage chez une startup tech...",
+    system: `Tu es un expert RH africain qui rédige des CV professionnels pour les marchés camerounais et africains.
+Crée un CV complet et bien structuré en français avec : Informations personnelles, Objectif professionnel, Formation, Expériences, Compétences, Langues.
+Adapte le ton au marché de l'emploi africain. Sois professionnel et percutant.`
+  },
+  lettre: {
+    label: "✉️ Lettre de motivation",
+    hint: "Décris le poste visé, ton profil, et pourquoi tu veux ce stage/emploi.",
+    placeholder: "Ex: Je postule pour un stage en comptabilité dans une banque à Douala. J'ai une Licence en Gestion...",
+    system: `Tu es un coach carrière spécialisé pour les jeunes africains.
+Tu rédiges des lettres de motivation percutantes en français, adaptées au marché camerounais et africain.
+Structure : Accroche → Présentation → Motivation → Adéquation profil/poste → Conclusion avec appel à l'action.
+Sois professionnel, enthousiaste mais pas excessif.`
+  },
+  explication: {
+    label: "🧠 Explication",
+    hint: "Quelle notion tu comprends pas ? Précise ta matière et ton niveau.",
+    placeholder: "Ex: Explique-moi la théorie du cycle de vie du produit en marketing — Licence 2",
+    system: `Tu es un professeur bienveillant pour les étudiants africains francophones.
+Tu expliques des notions complexes de façon simple, avec des exemples concrets tirés du contexte africain.
+Utilise des analogies simples, des exemples du quotidien camerounais ou africain.
+Termine toujours par un résumé en 3 points clés.`
+  },
+  exercice: {
+    label: "🎯 Exercice",
+    hint: "Colle ton exercice. Précise la matière (Maths, Physique, Compta...)",
+    placeholder: "Ex: Maths Terminale — Résoudre l'équation 2x² + 5x - 3 = 0",
+    system: `Tu es un prof de soutien scolaire pour étudiants africains.
+Tu résous les exercices étape par étape, en expliquant chaque étape clairement en français.
+N'donne pas juste la réponse : montre la méthode complète pour que l'étudiant comprenne et puisse reproduire.
+Utilise des notations claires et des séparateurs entre les étapes.`
+  }
+};
+
+let currentTool = 'dissertation';
+
+function openApp(tool) {
+  document.getElementById('app').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+  if (tool) selectToolByName(tool);
+}
+
+function openAppWithTool(tool) {
+  openApp(tool);
+}
+
+function closeApp() {
+  document.getElementById('app').classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+function scrollToTools() {
+  document.getElementById('tools-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function selectTool(el) {
+  document.querySelectorAll('.tool-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentTool = el.dataset.tool;
+  updateToolUI();
+  clearResult();
+}
+
+function selectToolByName(name) {
+  const chips = document.querySelectorAll('.tool-chip');
+  chips.forEach(c => {
+    c.classList.remove('active');
+    if (c.dataset.tool === name) c.classList.add('active');
+  });
+  currentTool = name;
+  updateToolUI();
+}
+
+function updateToolUI() {
+  const t = TOOLS[currentTool];
+  document.getElementById('context-hint').textContent = t.hint;
+  document.getElementById('user-input').placeholder = t.placeholder;
+  document.getElementById('app-tool-name').textContent = t.label;
+}
+
+function clearResult() {
+  document.getElementById('result-box').classList.remove('visible');
+  document.getElementById('error-msg').classList.remove('visible');
+  document.getElementById('result-content').textContent = '';
+}
+
+async function generate() {
+  const input = document.getElementById('user-input').value.trim();
+  if (!input) {
+    showError("Écris quelque chose d'abord 😅");
+    return;
+  }
+
+  const btn = document.getElementById('gen-btn');
+  const resultBox = document.getElementById('result-box');
+  const resultContent = document.getElementById('result-content');
+  const errorMsg = document.getElementById('error-msg');
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  errorMsg.classList.remove('visible');
+  resultBox.classList.remove('visible');
+
+  const t = TOOLS[currentTool];
+
+  try {
+    const response = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system: t.system,
+        message: input
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      showError("Erreur : " + data.error);
+      return;
+    }
+
+    const text = data.text || '';
+    resultContent.textContent = text;
+    resultBox.classList.add('visible');
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch (err) {
+    showError("Connexion impossible. Vérifie ton internet et réessaie.");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>✨</span> Générer';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function copyResult() {
+  const text = document.getElementById('result-content').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✅ Copié !';
+    setTimeout(() => btn.textContent = '📋 Copier', 2000);
+  });
+}
+
+// Init
+updateToolUI();
+</script>
+</body>
+</html>
